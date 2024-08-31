@@ -1,6 +1,6 @@
 {
   "name": "xmltogeojson",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "scripts": {
     "build": "rimraf ./dist && tsc",
@@ -14,7 +14,7 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports":  "./dist/index.js",
+  "exports": "./dist/index.js",
   "author": "Matteo Cosi",
   "license": "ISC",
   "devDependencies": {
