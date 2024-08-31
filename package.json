@@ -1,11 +1,12 @@
 {
   "name": "xmltogeojson",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "test": "jest"
+    "test": "jest",
+    "patch": "npm run test && npm run build && npm version patch && npm publish"
   },
   "keywords": [
     "gpx",
