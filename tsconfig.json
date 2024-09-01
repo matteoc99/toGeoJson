@@ -7,8 +7,28 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@interfaces/*": [
+        "interfaces/*"
+      ],
+      "@type/*": [
+        "types/*"
+      ],
+      "@models/*": [
+        "models/*"
+      ],
+      "@parsers": [
+        "parsers/index.ts"
+      ]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts"
+  ]
 }
