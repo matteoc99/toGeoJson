@@ -1,32 +1,23 @@
 export default class XmlAttribute {
-  prefix?: string;
-  name: string;
-  value: string;
+  public name: string;
+  public value: string;
+  public namespace: string | null;
+  public namespaceUri: string | null;
 
-  constructor(name: string, value: string, prefix?: string) {
-    if (!name || !value || !XmlAttribute.isValidName(name)) {
-      throw new Error("Attribute name and value must be provided.");
-    }
-
+  constructor(
+    name: string,
+    value: string,
+    namespace: string | null = null,
+    namespaceUri: string | null = null,
+  ) {
     this.name = name;
     this.value = value;
-    this.prefix = prefix;
+    this.namespace = namespace;
+    this.namespaceUri = namespaceUri;
   }
 
-  static isValidName(name: string): boolean {
-    return /^[a-zA-Z_][\w.-]*$/.test(name);
-  }
-
-  toString(): string {
-    const prefixStr = this.prefix ? `${this.prefix}:` : "";
-    return `${prefixStr}${this.name}="${this.value}"`;
-  }
-
-  equals(other: XmlAttribute): boolean {
-    return (
-      this.name === other.name &&
-      this.value === other.value &&
-      this.prefix === other.prefix
-    );
+  public toString(): string {
+    const attrNamespace = this.namespace ? `${this.namespace}:` : "";
+    return `${attrNamespace}${this.name}="${this.value}"`;
   }
 }

@@ -13,9 +13,7 @@ export default class Parser {
   }
 
   parse(track: string): GeoJson {
-    const parser = new XmlParser(track);
-
-    return this.parser.parse(parser.parseXml());
+    return this.parser.parse(XmlParser.parse(track));
   }
 
   private getParser(parser: ParserType): ParserInterface {

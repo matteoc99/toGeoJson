@@ -11,9 +11,13 @@ test("greet function", () => {
 test("gpx hydrate", () => {
   const gpxFilePath = join(__dirname, "files", "fells_loop.gpx");
   const gpxFileContent = readFileSync(gpxFilePath, "utf8");
-  const gpxData = Gpx.hydrate(XmlParser.parseXml(gpxFileContent).getRoot());
+  const root = XmlParser.parse(gpxFileContent).getRootElement();
+  if (!root) {
+    fail("no root element");
+  }
+  const gpxData = Gpx.hydrate(root);
 
-  expect(gpxData.creator).toBe("Health");
+  expect(gpxData.creator).toBe("ExpertGPS 1.1 - https://www.topografix.com");
   expect(gpxData.version).toBe("1.0");
 });
 
@@ -21,8 +25,8 @@ test("parse xml", () => {
   const gpxFilePath = join(__dirname, "files", "test.gpx");
   const gpxFileContent = readFileSync(gpxFilePath, "utf8");
 
-  const ret = XmlParser.parseXml(gpxFileContent);
+  const ret = XmlParser.parse(gpxFileContent);
 
   console.log(ret);
-  expect(ret.root).not.toBeNull();
+  expect(ret.toString()).not.toBeNull();
 });

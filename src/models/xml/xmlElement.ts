@@ -1,138 +1,137 @@
-import { XmlAttribute } from "@models/xml/index";
+import { XmlAttribute, XmlNode } from "@models/xml";
+import { XmlNodeType } from "@type/xml";
 
-export default class XmlElement {
-  private readonly _name: string;
-  private readonly _prefix?: string;
-  private _attributes: XmlAttribute[] = [];
-  private _children: Array<XmlElement | string> = [];
+export default class XmlElement extends XmlNode {
+  public name: string;
+  public namespace: string | null;
+  public namespaceUri: string | null;
+  public attributes: XmlAttribute[];
+  public children: XmlNode[];
 
-  constructor(name: string, prefix?: string) {
-    this._name = name;
-    this._prefix = prefix;
+  constructor(
+    name: string,
+    namespace: string | null = null,
+    namespaceUri: string | null = null,
+    attributes: XmlAttribute[] = [],
+    children: XmlNode[] = [],
+    parent: XmlNode | null = null,
+  ) {
+    super(XmlNodeType.Element, parent);
+    this.name = name;
+    this.namespace = namespace;
+    this.namespaceUri = namespaceUri;
+    this.attributes = attributes;
+    this.children = children;
   }
 
-  get name(): string {
-    return this._name;
+  // Convenience methods
+  public getAttribute(name: string): string | null {
+    const attr = this.attributes.find((a) => a.name === name);
+    return attr ? attr.value : null;
   }
 
-  get prefix(): string | undefined {
-    return this._prefix;
+  public getChild(name: string): XmlElement | null {
+    return (this.children.find(
+      (child) =>
+        child.type === XmlNodeType.Element &&
+        (child as XmlElement).name === name,
+    ) || null) as XmlElement | null;
   }
 
-  get attributes(): XmlAttribute[] {
-    return this._attributes;
+  public getChildren(name?: string): XmlElement[] {
+    return this.children
+      .filter(
+        (child) =>
+          child.type === XmlNodeType.Element &&
+          (name === undefined || (child as XmlElement).name === name),
+      )
+      .map((child) => child as XmlElement);
   }
 
-  get children(): Array<XmlElement | string> {
-    return this._children;
+  public hasChild(name: string): boolean {
+    return this.getChild(name) !== null;
   }
 
-  addAttributes(attributes: XmlAttribute[]): void {
-    attributes.forEach((attribute) => {
-      this.addAttribute(attribute);
-    });
-  }
-
-  addAttribute(attribute: XmlAttribute): void {
-    const existingAttrIndex = this._attributes.findIndex(
-      (attr) => attr.name === attribute.name,
-    );
-    if (existingAttrIndex !== -1) {
-      this._attributes[existingAttrIndex] = attribute;
-    } else {
-      this._attributes.push(attribute);
+  public find(predicate: (node: XmlNode) => boolean): XmlNode | null {
+    if (predicate(this)) {
+      return this;
     }
-  }
-
-  removeAttribute(name: string): void {
-    this._attributes = this._attributes.filter((attr) => attr.name !== name);
-  }
-
-  getAttribute(name: string): XmlAttribute | undefined {
-    return this._attributes.find((attr) => attr.name === name);
-  }
-
-  addChild(child: XmlElement | string): void {
-    if (typeof child === "string" && child.trim().length === 0) {
-      throw new Error("Empty text nodes are not allowed.");
-    }
-    this._children.push(child);
-  }
-
-  removeChild(child: XmlElement | string): void {
-    this._children = this._children.filter(
-      (c) =>
-        (typeof child === "string" && c === child) ||
-        (child instanceof XmlElement &&
-          c instanceof XmlElement &&
-          c._name === child._name &&
-          c._prefix === child._prefix),
-    );
-  }
-
-  getChild(name: string): XmlElement | undefined {
-    return this._children.find(
-      (child) => child instanceof XmlElement && child._name === name,
-    ) as XmlElement | undefined;
-  }
-
-  getChildAt(index: number): XmlElement | string | undefined {
-    return this._children[index];
-  }
-
-  replaceChildAt(index: number, newChild: XmlElement | string): void {
-    if (index >= 0 && index < this._children.length) {
-      this._children[index] = newChild;
-    } else {
-      throw new Error("Index out of bounds.");
-    }
-  }
-
-  hasChild(name: string): boolean {
-    return this._children.some(
-      (child) => child instanceof XmlElement && child._name === name,
-    );
-  }
-
-  indexOfChild(child: XmlElement | string): number {
-    if (typeof child === "string") {
-      return this._children.indexOf(child);
-    } else {
-      return this._children.findIndex(
-        (c) =>
-          c instanceof XmlElement &&
-          c._name === child._name &&
-          c._prefix === child._prefix,
-      );
-    }
-  }
-
-  toString(indent: string = ""): string {
-    const indentStep = "  ";
-    const childIndent = indent + indentStep;
-
-    const attrString = this._attributes
-      .map((attr) => attr.toString())
-      .join(" ");
-
-    const startTag = `<${this._name}${attrString ? " " + attrString : ""}>`;
-    const endTag = `</${this._name}>`;
-
-    if (this._children.length === 0) {
-      // Self-closing tag for empty elements
-      return `${indent}${startTag.slice(0, -1)} />`;
-    }
-
-    const childrenString = this._children
-      .map((child) => {
-        if (typeof child === "string") {
-          return `${childIndent}${child}`;
-        } else {
-          return child.toString(childIndent);
+    for (const child of this.children) {
+      if (child instanceof XmlElement) {
+        const result = child.find(predicate);
+        if (result) {
+          return result;
         }
-      })
-      .join("\n");
+      } else if (predicate(child)) {
+        return child;
+      }
+    }
+    return null;
+  }
 
-    return `${indent}${startTag}\n${childrenString}\n${indent}${endTag}`;
+  public findAll(predicate: (node: XmlNode) => boolean): XmlNode[] {
+    let results: XmlNode[] = [];
+    if (predicate(this)) {
+      results.push(this);
+    }
+    for (const child of this.children) {
+      if (child instanceof XmlElement) {
+        results = results.concat(child.findAll(predicate));
+      } else if (predicate(child)) {
+        results.push(child);
+      }
+    }
+    return results;
+  }
+
+  public addChild(node: XmlNode): void {
+    node.parent = this;
+    this.children.push(node);
+  }
+
+  public addAttribute(attribute: XmlAttribute): void {
+    this.attributes.push(attribute);
+  }
+
+  public removeChild(node: XmlNode): void {
+    const index = this.children.indexOf(node);
+    if (index !== -1) {
+      this.children.splice(index, 1);
+      node.parent = null;
+    }
+  }
+
+  public removeAttribute(name: string): void {
+    const index = this.attributes.findIndex((attr) => attr.name === name);
+    if (index !== -1) {
+      this.attributes.splice(index, 1);
+    }
+  }
+
+  public getTextContent(): string {
+    let content = "";
+    for (const child of this.children) {
+      if (child.type === XmlNodeType.Text || child.type === XmlNodeType.CData) {
+        content += child.toString();
+      } else if (child instanceof XmlElement) {
+        content += child.getTextContent();
+      }
+    }
+    return content;
+  }
+
+  public toString(): string {
+    const namespacePart = this.namespace ? `${this.namespace}:` : "";
+    const attributesPart = this.attributes
+      .map((attr) => {
+        return attr.toString();
+      })
+      .join(" ");
+    const startTag = `<${namespacePart}${this.name}${attributesPart ? " " + attributesPart : ""}>`;
+    const endTag = `</${namespacePart}${this.name}>`;
+    const childrenContent = this.children
+      .map((child) => child.toString())
+      .join("");
+    return `${startTag}${childrenContent}${endTag}`;
   }
 }

@@ -1,3 +1,10 @@
+export { default as XmlNode } from "./abstractXmlNode";
+export { default as XmlCData } from "./xmlCData";
+export { default as XmlAttribute } from "./xmlAttribute";
+export { default as XmlComment } from "./xmlComment";
+export { default as XmlDeclaration } from "./xmlDeclaration";
 export { default as XmlDocument } from "./xmlDocument";
 export { default as XmlElement } from "./xmlElement";
-export { default as XmlAttribute } from "./xmlAttribute";
+export { default as XmlProcessingInstruction } from "./xmlProcessingInstruction";
+export { default as XmlText } from "./xmlText";
+export { default as XmlDocumentType } from "./xmlDocumentType";

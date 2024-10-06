@@ -52,6 +52,6 @@ export default class Gpx {
     //   ? Extensions.hydrate(extensionsElement)
     //   : undefined;
 
-    return new Gpx(version!.value, creator!.value);
+    return new Gpx(version!.toString(), creator!.toString());
   }
 }
