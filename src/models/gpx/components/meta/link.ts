@@ -1,3 +1,5 @@
+import { XmlElement } from "@models/xml";
+
 export default class Link {
   href!: string; // required attribute
   text?: string;
@@ -9,10 +11,11 @@ export default class Link {
     this.type = type;
   }
 
-  public static hydrate(element: Element): Link {
+  public static hydrate(element: XmlElement): Link {
     const href = element.getAttribute("href") || "";
-    const text = element.querySelector("text")?.textContent || undefined;
-    const type = element.querySelector("type")?.textContent || undefined;
+
+    const text = element.getChildText("text");
+    const type = element.getChildText("type");
 
     return new Link(href, text, type);
   }

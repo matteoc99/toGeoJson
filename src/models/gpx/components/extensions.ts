@@ -1,3 +1,5 @@
+import { XmlElement } from "@models/xml";
+
 export default class Extensions {
   keyValuePairs: { [key: string]: string };
 
@@ -5,16 +7,13 @@ export default class Extensions {
     this.keyValuePairs = keyValuePairs;
   }
 
-  public static hydrate(element: Element): Extensions {
+  public static hydrate(element: XmlElement): Extensions {
     const keyValuePairs: { [key: string]: string } = {};
 
-    // Iterate over each child element in the extensions element
-    element.childNodes.forEach((node) => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        // Ensure it's an element node
-        const key = node.nodeName;
-        const value = node.textContent || "";
-        keyValuePairs[key] = value;
+    element.children.forEach((child) => {
+      if (child instanceof XmlElement) {
+        const key = child.name;
+        keyValuePairs[key] = child.getTextContent() || "";
       }
     });
 

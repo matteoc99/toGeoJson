@@ -1,4 +1,5 @@
-import { LongitudeType } from "@type/gpx";
+import { LatitudeType, LongitudeType } from "@type/gpx";
+import { XmlElement } from "@models/xml";
 
 export default class Bounds {
   minlat!: LongitudeType;
@@ -18,12 +19,28 @@ export default class Bounds {
     this.maxlon = maxlon;
   }
 
-  public static hydrate(element: Element): Bounds {
-    const minLat = parseFloat(element.getAttribute("minlat") || "0");
-    const minLon = parseFloat(element.getAttribute("minlon") || "0");
-    const maxLat = parseFloat(element.getAttribute("maxlat") || "0");
-    const maxLon = parseFloat(element.getAttribute("maxlon") || "0");
+  public static hydrate(element: XmlElement): Bounds {
+    const minlatAttr = element.getAttribute("minlat");
+    const minlonAttr = element.getAttribute("minlon");
+    const maxlatAttr = element.getAttribute("maxlat");
+    const maxlonAttr = element.getAttribute("maxlon");
 
-    return new Bounds(minLat, minLon, maxLat, maxLon);
+    if (
+      minlatAttr === null ||
+      minlonAttr === null ||
+      maxlatAttr === null ||
+      maxlonAttr === null
+    ) {
+      throw new Error(
+        "Bounds element must have minlat, minlon, maxlat, and maxlon attributes.",
+      );
+    }
+
+    const minlat = parseFloat(minlatAttr) as LatitudeType;
+    const minlon = parseFloat(minlonAttr) as LongitudeType;
+    const maxlat = parseFloat(maxlatAttr) as LatitudeType;
+    const maxlon = parseFloat(maxlonAttr) as LongitudeType;
+
+    return new Bounds(minlat, minlon, maxlat, maxlon);
   }
 }

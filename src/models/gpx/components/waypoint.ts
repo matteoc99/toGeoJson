@@ -1,3 +1,5 @@
+// Waypoint.ts
+
 import {
   DegreesType,
   DGPSStationType,
@@ -7,6 +9,7 @@ import {
 } from "@type/gpx";
 import { Extensions, Point } from "@models/gpx/components";
 import { Link } from "@models/gpx/components/meta";
+import { XmlElement } from "@models/xml";
 
 export default class Waypoint extends Point {
   ele?: number;
@@ -32,95 +35,91 @@ export default class Waypoint extends Point {
   constructor(
     lat: LatitudeType,
     lon: LongitudeType,
-    ele?: number,
-    time?: string,
-    magvar?: DegreesType,
-    geoidheight?: number,
-    name?: string,
-    cmt?: string,
-    desc?: string,
-    src?: string,
-    link?: Link[],
-    sym?: string,
-    type?: string,
-    fix?: FixType,
-    sat?: number,
-    hdop?: number,
-    vdop?: number,
-    pdop?: number,
-    ageofdgpsdata?: number,
-    dgpsid?: DGPSStationType,
-    extensions?: Extensions,
+    options?: {
+      ele?: number;
+      time?: string;
+      magvar?: DegreesType;
+      geoidheight?: number;
+      name?: string;
+      cmt?: string;
+      desc?: string;
+      src?: string;
+      link?: Link[];
+      sym?: string;
+      type?: string;
+      fix?: FixType;
+      sat?: number;
+      hdop?: number;
+      vdop?: number;
+      pdop?: number;
+      ageofdgpsdata?: number;
+      dgpsid?: DGPSStationType;
+      extensions?: Extensions;
+    },
   ) {
-    super(lat, lon, ele, time);
-    this.magvar = magvar;
-    this.geoidheight = geoidheight;
-    this.name = name;
-    this.cmt = cmt;
-    this.desc = desc;
-    this.src = src;
-    this.link = link;
-    this.sym = sym;
-    this.type = type;
-    this.fix = fix;
-    this.sat = sat;
-    this.hdop = hdop;
-    this.vdop = vdop;
-    this.pdop = pdop;
-    this.ageofdgpsdata = ageofdgpsdata;
-    this.dgpsid = dgpsid;
-    this.extensions = extensions;
+    super(lat, lon, options?.ele, options?.time);
+    this.magvar = options?.magvar;
+    this.geoidheight = options?.geoidheight;
+    this.name = options?.name;
+    this.cmt = options?.cmt;
+    this.desc = options?.desc;
+    this.src = options?.src;
+    this.link = options?.link;
+    this.sym = options?.sym;
+    this.type = options?.type;
+    this.fix = options?.fix;
+    this.sat = options?.sat;
+    this.hdop = options?.hdop;
+    this.vdop = options?.vdop;
+    this.pdop = options?.pdop;
+    this.ageofdgpsdata = options?.ageofdgpsdata;
+    this.dgpsid = options?.dgpsid;
+    this.extensions = options?.extensions;
   }
 
-  public static hydrate(element: Element): Waypoint {
-    const lat = parseFloat(element.getAttribute("lat")!);
-    const lon = parseFloat(element.getAttribute("lon")!);
-    const ele = element.querySelector("ele")
-      ? parseFloat(element.querySelector("ele")!.textContent!)
-      : undefined;
-    const time = element.querySelector("time")?.textContent || undefined;
-    const magvar = element.querySelector("magvar")
-      ? parseFloat(element.querySelector("magvar")!.textContent!)
-      : undefined;
-    const geoidheight = element.querySelector("geoidheight")
-      ? parseFloat(element.querySelector("geoidheight")!.textContent!)
-      : undefined;
-    const name = element.querySelector("name")?.textContent || undefined;
-    const cmt = element.querySelector("cmt")?.textContent || undefined;
-    const desc = element.querySelector("desc")?.textContent || undefined;
-    const src = element.querySelector("src")?.textContent || undefined;
-    const linkElements = Array.from(element.querySelectorAll("link"));
-    const link = linkElements.map((linkElem) => Link.hydrate(linkElem));
-    const sym = element.querySelector("sym")?.textContent || undefined;
-    const type = element.querySelector("type")?.textContent || undefined;
-    const fix =
-      (element.querySelector("fix")?.textContent as FixType) || undefined;
-    const sat = element.querySelector("sat")
-      ? parseInt(element.querySelector("sat")!.textContent!)
-      : undefined;
-    const hdop = element.querySelector("hdop")
-      ? parseFloat(element.querySelector("hdop")!.textContent!)
-      : undefined;
-    const vdop = element.querySelector("vdop")
-      ? parseFloat(element.querySelector("vdop")!.textContent!)
-      : undefined;
-    const pdop = element.querySelector("pdop")
-      ? parseFloat(element.querySelector("pdop")!.textContent!)
-      : undefined;
-    const ageofdgpsdata = element.querySelector("ageofdgpsdata")
-      ? parseFloat(element.querySelector("ageofdgpsdata")!.textContent!)
-      : undefined;
-    const dgpsid = element.querySelector("dgpsid")
-      ? parseInt(element.querySelector("dgpsid")!.textContent!)
-      : undefined;
-    const extensionsElement = element.querySelector("extensions");
+  public static hydrate(element: XmlElement): Waypoint {
+    const latAttr = element.getAttribute("lat");
+    const lonAttr = element.getAttribute("lon");
+
+    if (latAttr === null || lonAttr === null) {
+      throw new Error("Waypoint element must have lat and lon attributes.");
+    }
+
+    const lat = parseFloat(latAttr);
+    const lon = parseFloat(lonAttr);
+
+    const ele = element.getChildTextAsFloat("ele");
+    const time = element.getChildText("time");
+    const magvar = element.getChildTextAsFloat("magvar") as
+      | DegreesType
+      | undefined;
+    const geoidheight = element.getChildTextAsFloat("geoidheight");
+    const name = element.getChildText("name");
+    const cmt = element.getChildText("cmt");
+    const desc = element.getChildText("desc");
+    const src = element.getChildText("src");
+
+    const linkElements = element.getChildren("link");
+    const links = linkElements.map((linkElem) => Link.hydrate(linkElem));
+
+    const sym = element.getChildText("sym");
+    const type = element.getChildText("type");
+    const fix = element.getChildText("fix") as FixType | undefined;
+    const sat = element.getChildTextAsInt("sat");
+    const hdop = element.getChildTextAsFloat("hdop");
+    const vdop = element.getChildTextAsFloat("vdop");
+    const pdop = element.getChildTextAsFloat("pdop");
+    const ageofdgpsdata = element.getChildTextAsFloat("ageofdgpsdata");
+    const dgpsid = element.getChildTextAsInt("dgpsid") as
+      | DGPSStationType
+      | undefined;
+
+    const extensionsElement = element.getChild("extensions");
     const extensions = extensionsElement
       ? Extensions.hydrate(extensionsElement)
       : undefined;
 
-    return new Waypoint(
-      lat,
-      lon,
+    return new Waypoint(lat, lon, {
       ele,
       time,
       magvar,
@@ -129,7 +128,7 @@ export default class Waypoint extends Point {
       cmt,
       desc,
       src,
-      link,
+      link: links,
       sym,
       type,
       fix,
@@ -140,6 +139,6 @@ export default class Waypoint extends Point {
       ageofdgpsdata,
       dgpsid,
       extensions,
-    );
+    });
   }
 }

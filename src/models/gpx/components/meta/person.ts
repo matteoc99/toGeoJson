@@ -1,4 +1,5 @@
 import { Email, Link } from "@models/gpx/components/meta";
+import { XmlElement } from "@models/xml";
 
 export default class Person {
   name?: string;
@@ -11,11 +12,13 @@ export default class Person {
     this.link = link;
   }
 
-  public static hydrate(element: Element): Person {
-    const name = element.querySelector("name")?.textContent || undefined;
-    const emailElement = element.querySelector("email");
+  public static hydrate(element: XmlElement): Person {
+    const name = element.getChildText("name");
+
+    const emailElement = element.getChild("email");
     const email = emailElement ? Email.hydrate(emailElement) : undefined;
-    const linkElement = element.querySelector("link");
+
+    const linkElement = element.getChild("link");
     const link = linkElement ? Link.hydrate(linkElement) : undefined;
 
     return new Person(name, email, link);

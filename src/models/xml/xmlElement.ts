@@ -120,6 +120,20 @@ export default class XmlElement extends XmlNode {
     return content;
   }
 
+  public getChildText(childName: string): string | undefined {
+    return this.getChild(childName)?.getTextContent();
+  }
+
+  public getChildTextAsFloat(childName: string): number | undefined {
+    const text = this.getChildText(childName);
+    return text !== undefined ? parseFloat(text) : undefined;
+  }
+
+  public getChildTextAsInt(childName: string): number | undefined {
+    const text = this.getChildText(childName);
+    return text !== undefined ? parseInt(text, 10) : undefined;
+  }
+
   public toString(): string {
     const namespacePart = this.namespace ? `${this.namespace}:` : "";
     const attributesPart = this.attributes

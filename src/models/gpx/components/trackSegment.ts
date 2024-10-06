@@ -1,4 +1,5 @@
 import { Extensions, Waypoint } from "@models/gpx/components";
+import { XmlElement } from "@models/xml";
 
 export default class TrackSegment {
   trkpt?: Waypoint[];
@@ -9,10 +10,11 @@ export default class TrackSegment {
     this.extensions = extensions;
   }
 
-  public static hydrate(element: Element): TrackSegment {
-    const trkptElements = Array.from(element.querySelectorAll("trkpt"));
+  public static hydrate(element: XmlElement): TrackSegment {
+    const trkptElements = element.getChildren("trkpt");
     const trkpt = trkptElements.map((trkptElem) => Waypoint.hydrate(trkptElem));
-    const extensionsElement = element.querySelector("extensions");
+
+    const extensionsElement = element.getChild("extensions");
     const extensions = extensionsElement
       ? Extensions.hydrate(extensionsElement)
       : undefined;

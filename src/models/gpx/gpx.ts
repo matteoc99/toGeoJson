@@ -11,47 +11,68 @@ export default class Gpx {
   trk?: Track[];
   extensions?: Extensions;
 
-  private constructor(
+  constructor(
     version: string,
     creator: string,
-    metadata?: Metadata,
-    wpt?: Waypoint[],
-    rte?: Route[],
-    trk?: Track[],
-    extensions?: Extensions,
+    options: {
+      metadata?: Metadata;
+      wpt?: Waypoint[];
+      rte?: Route[];
+      trk?: Track[];
+      extensions?: Extensions;
+    } = {},
   ) {
     this.version = version;
     this.creator = creator;
-    this.metadata = metadata;
-    this.wpt = wpt;
-    this.rte = rte;
-    this.trk = trk;
-    this.extensions = extensions;
+    this.metadata = options.metadata;
+    this.wpt = options.wpt;
+    this.rte = options.rte;
+    this.trk = options.trk;
+    this.extensions = options.extensions;
   }
 
   public static hydrate(xmlDoc: XmlElement): Gpx {
+    // Ensure that required attributes exist
     const version = xmlDoc.getAttribute("version");
     const creator = xmlDoc.getAttribute("creator");
 
+    if (!version) {
+      throw new Error("GPX element is missing required 'version' attribute.");
+    }
+    if (!creator) {
+      throw new Error("GPX element is missing required 'creator' attribute.");
+    }
+
+    // Hydrate metadata
     const metadataElement = xmlDoc.getChild("metadata");
-    // const metadata = metadataElement
-    //   ? Metadata.hydrate(metadataElement)
-    //   : undefined;
+    const metadata = metadataElement
+      ? Metadata.hydrate(metadataElement)
+      : undefined;
 
-    // const waypointElements = Array.from(xmlDoc.getElementsByTagName("wpt"));
-    // const wpt = waypointElements.map((wptElem) => Waypoint.hydrate(wptElem));
-    //
-    // const routeElements = Array.from(xmlDoc.getElementsByTagName("rte"));
-    // const rte = routeElements.map((rteElem) => Route.hydrate(rteElem));
-    //
-    // const trackElements = Array.from(xmlDoc.getElementsByTagName("trk"));
-    // const trk = trackElements.map((trkElem) => Track.hydrate(trkElem));
-    //
-    // const extensionsElement = xmlDoc.querySelector("extensions");
-    // const extensions = extensionsElement
-    //   ? Extensions.hydrate(extensionsElement)
-    //   : undefined;
+    // Hydrate waypoints
+    const waypointElements = xmlDoc.getChildren("wpt");
+    const wpt = waypointElements.map((wptElem) => Waypoint.hydrate(wptElem));
 
-    return new Gpx(version!.toString(), creator!.toString());
+    // Hydrate routes
+    const routeElements = xmlDoc.getChildren("rte");
+    const rte = routeElements.map((rteElem) => Route.hydrate(rteElem));
+
+    // Hydrate tracks
+    const trackElements = xmlDoc.getChildren("trk");
+    const trk = trackElements.map((trkElem) => Track.hydrate(trkElem));
+
+    // Hydrate extensions
+    const extensionsElement = xmlDoc.getChild("extensions");
+    const extensions = extensionsElement
+      ? Extensions.hydrate(extensionsElement)
+      : undefined;
+
+    return new Gpx(version, creator, {
+      metadata,
+      wpt,
+      rte,
+      trk,
+      extensions,
+    });
   }
 }

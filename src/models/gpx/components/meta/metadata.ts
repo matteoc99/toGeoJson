@@ -1,5 +1,6 @@
 import { Bounds, Copyright, Link, Person } from "@models/gpx/components/meta";
 import { Extensions } from "@models/gpx/components";
+import { XmlElement } from "@models/xml";
 
 export default class Metadata {
   name?: string;
@@ -34,23 +35,28 @@ export default class Metadata {
     this.extensions = extensions;
   }
 
-  public static hydrate(element: Element): Metadata {
-    const name = element.querySelector("name")?.textContent || undefined;
-    const desc = element.querySelector("desc")?.textContent || undefined;
-    const authorElement = element.querySelector("author");
+  public static hydrate(element: XmlElement): Metadata {
+    const name = element.getChildText("name");
+    const desc = element.getChildText("desc");
+
+    const authorElement = element.getChild("author");
     const author = authorElement ? Person.hydrate(authorElement) : undefined;
-    const copyrightElement = element.querySelector("copyright");
+
+    const copyrightElement = element.getChild("copyright");
     const copyright = copyrightElement
       ? Copyright.hydrate(copyrightElement)
       : undefined;
-    const linkElements = Array.from(element.querySelectorAll("link"));
+
+    const linkElements = element.getChildren("link");
     const link = linkElements.map((linkElem) => Link.hydrate(linkElem));
-    const time = element.querySelector("time")?.textContent || undefined;
-    const keywords =
-      element.querySelector("keywords")?.textContent || undefined;
-    const boundsElement = element.querySelector("bounds");
+
+    const time = element.getChildText("time");
+    const keywords = element.getChildText("keywords");
+
+    const boundsElement = element.getChild("bounds");
     const bounds = boundsElement ? Bounds.hydrate(boundsElement) : undefined;
-    const extensionsElement = element.querySelector("extensions");
+
+    const extensionsElement = element.getChild("extensions");
     const extensions = extensionsElement
       ? Extensions.hydrate(extensionsElement)
       : undefined;

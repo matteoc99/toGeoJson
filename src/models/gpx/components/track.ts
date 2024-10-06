@@ -1,5 +1,6 @@
 import { Link } from "@models/gpx/components/meta";
 import { Extensions, TrackSegment } from "@models/gpx/components";
+import { XmlElement } from "@models/xml";
 
 export default class Track {
   name?: string;
@@ -33,23 +34,24 @@ export default class Track {
     this.extensions = extensions;
     this.trkseg = trkseg;
   }
+  public static hydrate(element: XmlElement): Track {
+    const name = element.getChildText("name");
+    const cmt = element.getChildText("cmt");
+    const desc = element.getChildText("desc");
+    const src = element.getChildText("src");
 
-  public static hydrate(element: Element): Track {
-    const name = element.querySelector("name")?.textContent || undefined;
-    const cmt = element.querySelector("cmt")?.textContent || undefined;
-    const desc = element.querySelector("desc")?.textContent || undefined;
-    const src = element.querySelector("src")?.textContent || undefined;
-    const linkElements = Array.from(element.querySelectorAll("link"));
+    const linkElements = element.getChildren("link");
     const link = linkElements.map((linkElem) => Link.hydrate(linkElem));
-    const number = element.querySelector("number")
-      ? parseInt(element.querySelector("number")!.textContent!)
-      : undefined;
-    const type = element.querySelector("type")?.textContent || undefined;
-    const extensionsElement = element.querySelector("extensions");
+
+    const number = element.getChildTextAsInt("number");
+    const type = element.getChildText("type");
+
+    const extensionsElement = element.getChild("extensions");
     const extensions = extensionsElement
       ? Extensions.hydrate(extensionsElement)
       : undefined;
-    const trksegElements = Array.from(element.querySelectorAll("trkseg"));
+
+    const trksegElements = element.getChildren("trkseg");
     const trkseg = trksegElements.map((trksegElem) =>
       TrackSegment.hydrate(trksegElem),
     );

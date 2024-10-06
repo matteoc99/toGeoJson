@@ -1,5 +1,6 @@
 import { Link } from "@models/gpx/components/meta";
 import { Extensions, Waypoint } from "@models/gpx/components";
+import { XmlElement } from "@models/xml";
 
 export default class Route {
   name?: string;
@@ -34,22 +35,24 @@ export default class Route {
     this.rtept = rtept;
   }
 
-  public static hydrate(element: Element): Route {
-    const name = element.querySelector("name")?.textContent || undefined;
-    const cmt = element.querySelector("cmt")?.textContent || undefined;
-    const desc = element.querySelector("desc")?.textContent || undefined;
-    const src = element.querySelector("src")?.textContent || undefined;
-    const linkElements = Array.from(element.querySelectorAll("link"));
+  public static hydrate(element: XmlElement): Route {
+    const name = element.getChildText("name");
+    const cmt = element.getChildText("cmt");
+    const desc = element.getChildText("desc");
+    const src = element.getChildText("src");
+
+    const linkElements = element.getChildren("link");
     const link = linkElements.map((linkElem) => Link.hydrate(linkElem));
-    const number = element.querySelector("number")
-      ? parseInt(element.querySelector("number")!.textContent!)
-      : undefined;
-    const type = element.querySelector("type")?.textContent || undefined;
-    const extensionsElement = element.querySelector("extensions");
+
+    const number = element.getChildTextAsInt("number");
+    const type = element.getChildText("type");
+
+    const extensionsElement = element.getChild("extensions");
     const extensions = extensionsElement
       ? Extensions.hydrate(extensionsElement)
       : undefined;
-    const rteptElements = Array.from(element.querySelectorAll("rtept"));
+
+    const rteptElements = element.getChildren("rtept");
     const rtept = rteptElements.map((rteptElem) => Waypoint.hydrate(rteptElem));
 
     return new Route(
