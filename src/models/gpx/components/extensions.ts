@@ -1,22 +1,32 @@
 import { XmlElement } from "@models/xml";
+import {
+  ExtensionValue,
+  TrackPointExtension,
+} from "@models/gpx/components/extensions/index"; //todo why cant i remove /index
 
 export default class Extensions {
-  keyValuePairs: { [key: string]: string };
+  extensions: Array<TrackPointExtension | ExtensionValue>;
 
-  constructor(keyValuePairs: { [key: string]: string }) {
-    this.keyValuePairs = keyValuePairs;
+  constructor(extensions: Array<TrackPointExtension | ExtensionValue>) {
+    this.extensions = extensions;
   }
 
   public static hydrate(element: XmlElement): Extensions {
-    const keyValuePairs: { [key: string]: string } = {};
+    const extensions: Array<TrackPointExtension | ExtensionValue> = [];
 
     element.children.forEach((child) => {
       if (child instanceof XmlElement) {
-        const key = child.name;
-        keyValuePairs[key] = child.getTextContent() || "";
+        const name = child.name;
+        switch (name) {
+          case "TrackPointExtension":
+            extensions.push(TrackPointExtension.hydrate(child));
+            break;
+          default:
+            extensions.push(ExtensionValue.hydrate(child));
+        }
       }
     });
 
-    return new Extensions(keyValuePairs);
+    return new Extensions(extensions);
   }
 }

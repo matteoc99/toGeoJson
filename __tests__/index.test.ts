@@ -21,6 +21,19 @@ test("gpx hydrate", () => {
   expect(gpxData.version).toBe("1.0");
 });
 
+test("gpx meltina", () => {
+  const gpxFilePath = join(__dirname, "files", "Meltina_Avelengo_Merano.gpx");
+  const gpxFileContent = readFileSync(gpxFilePath, "utf8");
+  const root = XmlParser.parse(gpxFileContent).getRootElement();
+  if (!root) {
+    fail("no root element");
+  }
+  const gpxData = Gpx.hydrate(root);
+
+  expect(gpxData.trk?.[0]?.trkseg?.[0]?.trkpt?.length).toBe(5132);
+  expect(gpxData.version).toBe("1.1");
+});
+
 test("parse xml", () => {
   const gpxFilePath = join(__dirname, "files", "test.gpx");
   const gpxFileContent = readFileSync(gpxFilePath, "utf8");
